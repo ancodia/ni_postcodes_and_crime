@@ -1,2 +1,2 @@
-# ni_postcodes_and_crime
+# Northern Ireland Postcodes and Crime Data
 Data Science CA2
