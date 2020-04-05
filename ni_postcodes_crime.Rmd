@@ -1,42 +1,46 @@
 ---
 title: "NI Postcode and Crime Data"
+author: "Danny Regan"
 output:
   pdf_document: 
     fig_caption: true
-  html_notebook: default
   html_document:
-    df_print: paged
+    keep_md: true
 ---
 ```{r, include=FALSE}
 source("ni_postcodes_data.R")
+source("ni_crime_data.R")
 ```
 
-This document describes the methods used during and results obtained from analysis of postcode and crime data for Northern Ireland. The postcode dataset is the focus of the first section, while the next section features the steps taken in analysing the crime dataset.
+This document describes the methods used during and results obtained from preparation an analysis of postcode and crime data for Northern Ireland. The postcode dataset is the focus of the first section, while the following section features the steps taken in analysing the crime dataset. 
+
+All code referenced in this document can be found on Github[^1]. All related data files are contained in a `data` folder in the project working directory.
+
+[^1]: https://github.com/ancodia/ni_postcodes_and_crime
 
 # NI Postcode Data
-\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
-a\) Show the Total number of rows, the structure of the data frame, and first 10 rows of the data frame containing all of the NI Postcode data.
+a\) The first step is to load the NI postcodes dataset as a dataframe. The `describe_data()` function is then used to display the total number of records in the newly created dataframe, then shows the structure of the data and prints the first 10 rows.
 ```{r}
 ni_postcodes <- read.csv("data/NIPostcodes.csv")
 describe_data(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
-b\) Add a suitable title for each attribute of the data.
+b\) The correct titles are then assigned to each column in the postcodes dataframe.
 ```{r}
 ni_postcodes <- rename_columns(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 \newpage
-c\) Remove or replace missing entries with a suitable identifier.
+c\) Next comes the handling of missing data.
 
-From inspecting the dataframe, there are a lot of empty cells. Replacing these with NA to get a clearer idea of what is missing
+From visually inspecting the dataframe, there are a lot of empty cells. Replacing these with NA to get a clearer idea of what is missing
 ```{r}
 ni_postcodes[ni_postcodes == ""] <- NA
 ```
 
-Use VIM to get missing values and then print summary
+VIM is used to get missing values and then print a summary of what is not there.
 ```{r}
 missing_values <- aggr(ni_postcodes, 
                        prop = FALSE, 
@@ -47,15 +51,15 @@ missing_values[["missings"]]
 ```
 Missing values of note are Town (19872) and Postcode (8900)
 
-Rows with both Town and Postcode missing will be removed because it introduces too much abiquity for a record, if only Postcode is missing the row will be kept.
+Rows with either Town or Postcode missing will be removed because ambiquity is introduced if a record has either of these not present.
 ```{r}
-ni_postcodes <- ni_postcodes[!(is.na(ni_postcodes$Town) & 
+ni_postcodes <- ni_postcodes[!(is.na(ni_postcodes$Town) | 
                                  is.na(ni_postcodes$Postcode)),]
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 \newpage
-d\) Show the total number of missing values for each column in the postcode data frame.
+d\) After ignoring rows with a missing town or postcode value, the missing value counts for the dataframe is as follows:
 ```{r}
 missing_values_after_removal <- aggr(ni_postcodes, 
                                      prop = FALSE, 
@@ -65,8 +69,7 @@ missing_values_after_removal <- aggr(ni_postcodes,
 missing_values_after_removal[["missings"]]
 ```
 
-After the rows with NA for both Town and Postcode were removed 
-The dataset now has 19446 records with Town missing in 19446 records with Postcode missing.
+Rows with NA for Town or Postcode are removed.
 
 Total rows after cleaning:
 ```{r}
@@ -74,34 +77,92 @@ nrow(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
-\newpage
-e\) Move the primary key identifier to the start of the dataset.
+e\) The primary key column is to be moved from the last position in the dataframe to the first with the `move_primary_key()` function. The before and after order of columns is displayed below.
 ```{r}
 ni_postcodes <- move_primary_key(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
-f\) Create a new dataset called Limavady_data. Store within it only information where locality, townland and town contain the name Limavady. Count and display the number of rows. Store this information in a csv file called Limavady.
+f\) A dataframe is then created containing only postcode records where the locality, townland or town contains Limavady. In the `extract_limavady_data()` function used to achieve this, the number of rows in the new dataframe is displayed and then the data is written to a csv file.
 ```{r}
 limavady_data <- extract_limavady_data(ni_postcodes)
 ```
-![limavady.csv](images/limavady.png){#id .class width=50% height=50%}
+
+```{r fig.align = 'center', out.width = "80%", fig.cap = "limavady.csv", echo = FALSE}
+knitr::include_graphics(here::here("images", "limavady.png"))
+```
+
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 \newpage
-g\) Save the modified NIPostcode dataset in a csv file called CleanNIPostcodeData.
+g\) Finally, the cleaned NI postcode dataframe is written to a csv file, ready for analysis.
 ```{r}
-write_csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
+write.csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
 ```
-![CleanNIPostcodeData.csv](images/cleaned_postcodes.png){#id .class width=50% height=50%}
+
+```{r fig.align = 'center', out.width = "80%", fig.cap = "CleanNIPostcodeData.csv", echo = FALSE}
+knitr::include_graphics(here::here("images", "cleaned_postcodes.png"))
+```
+
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
-
 # NI Crime Data
+a\) In the `combine_crime_data()` function all data from the monthly crime report files are combined into a single dataframe, this dataframe is written to the AllNICrimeData.csv file (see below) and the total number of records is printed.
+```{r, warning = FALSE}
+crime_data <- combine_crime_data("data/NI Crime Data/")
+```
+
+```{r fig.align = 'center', out.width = "80%", fig.cap = "AllNICrimeData.csv", echo = FALSE}
+knitr::include_graphics(here::here("images", "all_crime.png"))
+```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+
+b\)
+```{r}
+
+```
+
+c\)
+```{r}
+
+```
+
+d\)
+```{r}
+
+```
+
+e\)
+```{r}
+
+```
+
+f\)
+```{r}
+
+```
+
+g\)
+```{r}
+
+```
+
+h\)
+```{r}
+
+```
+
+i\)
+```{r}
+
+```
+
+i\)
+```{r}
+
+```
+
+i\)
+```{r}
+
+```

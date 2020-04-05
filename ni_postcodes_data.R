@@ -1,5 +1,5 @@
 library(VIM)
-library(tidyverse)
+library(dplyr)
 # ----------------------------------------------
 # Functions for use with the NI Postcode dataset
 # ----------------------------------------------
@@ -69,7 +69,7 @@ extract_limavady_data <- function(dataframe){
   print(nrow(limavady_data))
   
   # write limavady data to csv
-  write_csv(limavady_data, "data/limavady.csv")
+  write.csv(limavady_data, "data/limavady.csv")
   return(limavady_data)
 }
 
@@ -80,6 +80,8 @@ extract_limavady_data <- function(dataframe){
 # load postcode csv data to dataframe
 ni_postcodes <- read.csv("data/NIPostcodes.csv")
 describe_data(ni_postcodes)
+
+
 
 ni_postcodes <- rename_columns(ni_postcodes)
 
@@ -101,10 +103,9 @@ missing_values[["missings"]]
 
 # Missing values of note are Town (19872) and Postcode (8900)
 
-# rows with both Town and Postcode missing will be removed 
-# because it leaves too much abiquity for a record, 
-# if only Postcode is missing the row will be kept.
-ni_postcodes <- ni_postcodes[!(is.na(ni_postcodes$Town) & 
+# rows with either Town and Postcode missing will be removed 
+# because it gives too much abiquity to a record
+ni_postcodes <- ni_postcodes[!(is.na(ni_postcodes$Town) |
                                  is.na(ni_postcodes$Postcode)),]
 
 # check missing values again
@@ -113,8 +114,7 @@ missing_values_after_removal <- aggr(ni_postcodes,
                                      numbers = TRUE, 
                                      plot = FALSE)
 missing_values_after_removal[["missings"]]
-# After the rows with NA for both Town and Postcode were removed 
-# The dataset now has 19446 records with Town missing in 19446 records with Postcode missing.
+# Rows with NA for Town or Postcode are removed
 cat("\n\n------------------\nTotal rows after cleaning:\n------------------\n")
 print(nrow(ni_postcodes))
 
@@ -125,4 +125,4 @@ ni_postcodes <- move_primary_key(ni_postcodes)
 limavady_data <- extract_limavady_data(ni_postcodes)
 
 # g) Save the modified NIPostcode dataset in a csv file called CleanNIPostcodeData
-write_csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
+write.csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
