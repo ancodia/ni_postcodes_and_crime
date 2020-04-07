@@ -112,7 +112,7 @@ a\) In the `combine_crime_data()` function all data from the monthly crime repor
 crime_data <- combine_crime_data("data/NI Crime Data/")
 ```
 
-```{r fig.align = 'center', out.width = "80%", fig.cap = "AllNICrimeData.csv", echo = FALSE}
+```{r fig.align = 'center', out.width = "80%", fig.cap = "Initial AllNICrimeData.csv", echo = FALSE}
 knitr::include_graphics(here::here("images", "all_crime.png"))
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
@@ -121,6 +121,10 @@ b\)
 ```{r}
 
 ```
+```{r fig.align = 'center', out.width = "80%", fig.cap = "Modified AllNICrimeData.csv", echo = FALSE}
+knitr::include_graphics(here::here("images", "all_crime2.png"))
+```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 c\)
 ```{r}
