@@ -29,22 +29,19 @@ combine_crime_data <- function(path){
   return(crime_data)
 }
 
-modify_crime_data_structure <- function(dataframe){
-  # b) Modify the structure of dataframe by 
-  # removing the attributes: CrimeID, Reported by, Falls within, 
-  # LSOA code, LSOA name, last outcome and context. 
-  updated_df <- dataframe[, !(colnames(dataframe) %in% c("Crime.ID", 
-                                                         "Reported.by", 
-                                                         "Falls.within", 
-                                                         "LSOA.code", 
-                                                         "LSOA.name"))]
+modify_crime_data_structure <- function(dataframe, 
+                                        remove_columns, 
+                                        save = TRUE,
+                                        file_name = "crime_data.csv"){
+  # new datafram, excluding remove_columns list
+  updated_df <- dataframe[, !(colnames(dataframe) %in% remove_columns)]
   
   # Show the new structure
-  cat("\n\n------------------\nAll crime dataframe structure:\n------------------\n")
+  cat("\n\n------------------\nCrime dataframe structure:\n------------------\n")
   str(updated_df, width = 80, strict.width = "cut")
   
   # Save dataframe to file
-  write.csv(updated_df, "data/AllNICrimeData.csv")
+  write.csv(updated_df, file_name)
   return(updated_df)
 }
 
@@ -84,11 +81,11 @@ abbreviate_crime_types <- function(dataframe){
 }
 
 plot_crime_frequency <- function(dataframe){
-  # plot crime type frequency (d), horizontak bar chart
+  # plot crime type frequency (d), horizontal bar chart
   # get count of each crime type and sort
   type_occurences <- sort(table(unlist(dataframe$Crime.type)))
   labels <- as.vector(names(type_occurences))
-  blues <- colorRampPalette(colors = c("pink", "purple"))(15)
+  colour <- colorRampPalette(colors = c("pink", "purple"))(15)
   
   par(mar = c(5, 6, 4, 2) + 0.1) # set margins, 
   # horizontal labels throughs out spacing for y-axis label
@@ -99,7 +96,7 @@ plot_crime_frequency <- function(dataframe){
           horiz = TRUE,
           names.arg = labels,
           las = 1, # horizontal labels
-          col = blues,
+          col = colour,
           mgp = c(3, 1, 0))
   axis(1, at = 
          seq(0, range(type_occurences)[2], 
@@ -108,12 +105,71 @@ plot_crime_frequency <- function(dataframe){
 }
 
 find_a_town <- function(crime_data, postcode_data){
+  # (f) find location information from postcode data
+  # get town from postcode data based on crime.location matching postcode.PrimaryThorofare
+  crime_data$Town <- with(postcode_data, 
+                          Town[match(
+                            toupper(crime_data$Location), 
+                            Primary.Thorofare)])
+  cat("\n\n------------------\nTown Included:\n------------------\n")
+  print(head(crime_data))
+  return(crime_data)
+}
+
+add_town_data <- function(crime_data, village_data){
+  # (g) Add population to crime dataframe
+  crime_data$Population <- with(village_data, 
+                                POPULATION[match(
+                                  crime_data$Town, 
+                                  toupper(CITY.TOWN.VILLAGE))])
+  cat("\n\n------------------\nPopulation Included:\n------------------\n")
+  print(head(crime_data))
+  return(crime_data)
+}
+
+plot_derry_belfast_crime <- function(derry_data, belfast_data){
+  # plot derry/belfast crime type frequency (i), horizontal bar charts side-by-side
+  # get count of each crime type and sort
+  type_occurences_derry <- sort(table(unlist(derry_data$Crime.type)))
+  labels_derry <- as.vector(names(type_occurences_derry))
+  colour1 <- colorRampPalette(colors = c("lightblue", "blue"))(15)
+  type_occurences_belfast <- sort(table(unlist(belfast_data$Crime.type)))
+  labels_belfast <- as.vector(names(type_occurences_belfast))
+  colour2 <- colorRampPalette(colors = c("lightgreen", "green"))(15)
   
-  crime_data$Town <- postcode_data %>%
-    filter(grepl(crime_data$Location, 
-                 postcode_data$Primary.Thorofare, 
-                 ignore.case = TRUE))
-  return(with_town_column)
+  # set columns:2/rows:1, margins, oma set for overall title space
+  par(mfrow = c(1, 2), mar = c(5, 6, 4, 2) + 0.1, oma = c(0, 0, 2, 0))
+  # horizontal labels throughs out spacing for y-axis label
+  barplot(type_occurences_derry, 
+          main = "Derry", 
+          ylab = "",
+          xlab = "Count",
+          horiz = TRUE,
+          names.arg = labels_derry,
+          las = 1, # horizontal labels
+          col = colour1,
+          mgp = c(3, 1, 0),
+          xlim = c(0, 450))
+  axis(1, at = 
+         seq(0, 450, 
+             by=25), labels=FALSE)
+  mtext("Type", side=2, line=4) # add in y-axis label
+  
+  barplot(type_occurences_belfast, 
+          main = "Belfast", 
+          ylab = "",
+          xlab = "Count",
+          horiz = TRUE,
+          names.arg = labels_belfast,
+          las = 1, # horizontal labels
+          col = colour2,
+          mgp = c(3, 1, 0),
+          xlim = c(0, 450))
+  axis(1, at = 
+         seq(0, 450, 
+             by=25), labels=FALSE)
+  mtext("Type", side=2, line=4) # add in y-axis label
+  mtext("Derry vs Belfast Crime Rates", outer = TRUE, cex = 1.5)
 }
 
 # ----------------------------------------------
@@ -121,8 +177,16 @@ find_a_town <- function(crime_data, postcode_data){
 # ----------------------------------------------
 crime_data <- combine_crime_data("data/NI Crime Data/")
 
-# modify structure of dataset
-crime_data <- modify_crime_data_structure(crime_data)
+# b) Modify the structure of dataframe by 
+# removing the attributes: CrimeID, Reported by, Falls within, 
+# LSOA code, LSOA name, last outcome and context. 
+crime_data <- modify_crime_data_structure(crime_data, 
+                                          remove_columns = c("Crime.ID", 
+                                                             "Reported.by", 
+                                                             "Falls.within", 
+                                                             "LSOA.code", 
+                                                             "LSOA.name"),
+                                          file_name = "data/AllNICrimeData.csv")
 
 # shorten crime type text
 crime_data <- abbreviate_crime_types(crime_data)
@@ -142,21 +206,43 @@ head(crime_data, n = 10)
 # load postcode data
 ni_postcodes <- read.csv("data/CleanNIPostcodeData.csv")
 
-# (f) get 5000 random samples from crime data, where location is not NA, 
+# f) get 5000 random samples from crime data, where location is not NA or "No Location", 
 # using sample_n from dplyr
 set.seed(100)
 random_crime_sample <- crime_data %>%
-  filter(!is.na(crime_data$Location)) %>%
+  filter(!is.na(crime_data$Location) & crime_data$Location != "No Location") %>%
   sample_n(5000)
+head(random_crime_sample, n = 10)
 
 # find location information from postcode data
+random_crime_sample <- find_a_town(random_crime_sample, ni_postcodes)
+
+# match population from village dataset to crime sample
+village_data <- read.csv("data/VillageList.csv")
+
+# update londonderry to derry so population can be found from lookup dataset
+random_crime_sample$Town <- as.character(random_crime_sample$Town)
+random_crime_sample$Town[random_crime_sample$Town == "LONDONDERRY"] <- "DERRY"
+
+random_crime_sample <- add_town_data(random_crime_sample, village_data)
+
+# h) removing Last.outcome.category and Context columns, save to csv
+random_crime_sample <- modify_crime_data_structure(random_crime_sample, 
+                                                   remove_columns = 
+                                                     c("Last.outcome.category", 
+                                                       "Context"),
+                                                   file_name = 
+                                                     "data/random_crime_sample.csv")
+
+# plot Derry vs Belfast crime data
+# first create a dataframe for each city
+attach(random_crime_sample)
+derry_data <- random_crime_sample[which(Town == "DERRY"), ]
+belfast_data <- random_crime_sample[which(Town == "BELFAST"), ]
+detach(random_crime_sample)
+
+plot_derry_belfast_crime(derry_data, belfast_data)
 
 
-crime_data$Town <- NA 
-crime_data$Town <- ni_postcodes %>%
-  filter(grepl(crime_data$Location, 
-               Primary.Thorofare, 
-               ignore.case = TRUE))
 
-crime_data$Town <- ni_postcodes  %>%
-  filter(ni_postcodes$Primary.Thorofare %in% accessions40$V1)
+

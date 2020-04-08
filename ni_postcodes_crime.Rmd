@@ -7,7 +7,7 @@ output:
   html_document:
     keep_md: true
 ---
-```{r, include=FALSE}
+```{r setup, include=FALSE}
 source("ni_postcodes_data.R")
 source("ni_crime_data.R")
 ```
@@ -20,14 +20,14 @@ All code referenced in this document can be found on Github[^1]. All related dat
 
 # NI Postcode Data
 a\) The first step is to load the NI postcodes dataset as a dataframe. The `describe_data()` function is then used to display the total number of records in the newly created dataframe, then shows the structure of the data and prints the first 10 rows.
-```{r}
+```{r section1-a, size = "small"}
 ni_postcodes <- read.csv("data/NIPostcodes.csv")
 describe_data(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 b\) The correct titles are then assigned to each column in the postcodes dataframe.
-```{r}
+```{r section1-b}
 ni_postcodes <- rename_columns(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
@@ -36,12 +36,12 @@ ni_postcodes <- rename_columns(ni_postcodes)
 c\) Next comes the handling of missing data.
 
 From visually inspecting the dataframe, there are a lot of empty cells. Replacing these with NA to get a clearer idea of what is missing
-```{r}
+```{r section1-c1}
 ni_postcodes[ni_postcodes == ""] <- NA
 ```
 
 VIM is used to get missing values and then print a summary of what is not there.
-```{r}
+```{r section1-c2}
 missing_values <- aggr(ni_postcodes, 
                        prop = FALSE, 
                        numbers = TRUE, 
@@ -52,7 +52,7 @@ missing_values[["missings"]]
 Missing values of note are Town (19872) and Postcode (8900)
 
 Rows with either Town or Postcode missing will be removed because ambiquity is introduced if a record has either of these not present.
-```{r}
+```{r section1-c3}
 ni_postcodes <- ni_postcodes[!(is.na(ni_postcodes$Town) | 
                                  is.na(ni_postcodes$Postcode)),]
 ```
@@ -60,7 +60,7 @@ ni_postcodes <- ni_postcodes[!(is.na(ni_postcodes$Town) |
 
 \newpage
 d\) After ignoring rows with a missing town or postcode value, the missing value counts for the dataframe is as follows:
-```{r}
+```{r section1-d1}
 missing_values_after_removal <- aggr(ni_postcodes, 
                                      prop = FALSE, 
                                      numbers = TRUE, 
@@ -72,23 +72,23 @@ missing_values_after_removal[["missings"]]
 Rows with NA for Town or Postcode are removed.
 
 Total rows after cleaning:
-```{r}
+```{r section1-d2}
 nrow(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 e\) The primary key column is to be moved from the last position in the dataframe to the first with the `move_primary_key()` function. The before and after order of columns is displayed below.
-```{r}
+```{r section1-e}
 ni_postcodes <- move_primary_key(ni_postcodes)
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 f\) A dataframe is then created containing only postcode records where the locality, townland or town contains Limavady. In the `extract_limavady_data()` function used to achieve this, the number of rows in the new dataframe is displayed and then the data is written to a csv file.
-```{r}
+```{r section1-f}
 limavady_data <- extract_limavady_data(ni_postcodes)
 ```
 
-```{r fig.align = 'center', out.width = "80%", fig.cap = "limavady.csv", echo = FALSE}
+```{r section1-f_img, fig.align = 'center', out.width = "80%", fig.cap = "limavady.csv", echo = FALSE}
 knitr::include_graphics(here::here("images", "limavady.png"))
 ```
 
@@ -96,11 +96,11 @@ knitr::include_graphics(here::here("images", "limavady.png"))
 
 \newpage
 g\) Finally, the cleaned NI postcode dataframe is written to a csv file, ready for analysis.
-```{r}
+```{r section1-g}
 write.csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
 ```
 
-```{r fig.align = 'center', out.width = "80%", fig.cap = "CleanNIPostcodeData.csv", echo = FALSE}
+```{r section1-g_img, fig.align = 'center', out.width = "80%", fig.cap = "CleanNIPostcodeData.csv", echo = FALSE}
 knitr::include_graphics(here::here("images", "cleaned_postcodes.png"))
 ```
 
@@ -108,65 +108,98 @@ knitr::include_graphics(here::here("images", "cleaned_postcodes.png"))
 
 # NI Crime Data
 a\) In the `combine_crime_data()` function all data from the monthly crime report files are combined into a single dataframe, this dataframe is written to the AllNICrimeData.csv file (see below) and the total number of records is printed.
-```{r, warning = FALSE}
+```{r section2-a, warning = FALSE, size = "small"}
 crime_data <- combine_crime_data("data/NI Crime Data/")
 ```
 
-```{r fig.align = 'center', out.width = "80%", fig.cap = "Initial AllNICrimeData.csv", echo = FALSE}
+```{r section2-a_img, fig.align = 'center', out.width = "80%", fig.cap = "Initial AllNICrimeData.csv", echo = FALSE}
 knitr::include_graphics(here::here("images", "all_crime.png"))
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
-b\)
-```{r}
-
+\newpage
+b\) Modifying the crime dataframe so that CrimeID, Reported by, Falls within, LSOA code, LSOA name, last outcome and context are excluded. New structure is saved to a csv file, see below.
+```{r section2-b}
+crime_data <- modify_crime_data_structure(crime_data, 
+                                          remove_columns = c("Crime.ID", 
+                                                             "Reported.by", 
+                                                             "Falls.within", 
+                                                             "LSOA.code", 
+                                                             "LSOA.name"),
+                                          file_name = "data/AllNICrimeData.csv")
 ```
-```{r fig.align = 'center', out.width = "80%", fig.cap = "Modified AllNICrimeData.csv", echo = FALSE}
+```{r section2-b_img, fig.align = 'center', out.width = "80%", fig.cap = "Modified AllNICrimeData.csv", echo = FALSE}
 knitr::include_graphics(here::here("images", "all_crime2.png"))
 ```
 \noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
-c\)
-```{r}
+\newpage
+c\) Abbreviate text for each crime type:
+```{r section2-c}
+crime_data <- abbreviate_crime_types(crime_data)
+```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
+d\) Plot the frequency of each crime type across all of Northern Ireland. 
+```{r section2-d}
+plot_crime_frequency(crime_data)
 ```
 
-d\)
-```{r}
+It is evident from the chart that anti-social behaviour (ASBO) is the most prevalent crime category throughout the country by  quite a margin. Recorded instances total close to 180,000 whereas the next highest crime type is Violence and sexual offences (VISO) with around 110,000 occurences.
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
+e\) Cleaning up the location column by removing "On or near ", leaving only the street name. A sample of the data before updating:
+```{r section2-e1}
+head(crime_data, n = 10)
 ```
 
-e\)
-```{r}
-
+Using `str_replace()` from `stringr` remove unwanted text and replace blank values with NA.  
+```{r section2-e2}
+crime_data$Location <- str_replace(crime_data$Location, pattern = "On or near ", "")
+crime_data$Location[crime_data$Location == ""] <- NA
 ```
 
-f\)
-```{r}
-
+After the update:
+```{r section2-e3}
+head(crime_data, n = 10)
 ```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+
+f\) The next step is to find the town in which crimes have occured. The cleaned NI Postcode data will be used to achieve this so the data is loaded from the previously created csv.
+```{r section2-f1}
+ni_postcodes <- read.csv("data/CleanNIPostcodeData.csv")
+```
+A random sample of 5,000 crime records is taken with conditions  included to ignore NA or "No Location" values in the dataset. A seed is set to allow for reproducible results.
+```{r section2-f2}
+set.seed(100)
+random_crime_sample <- crime_data %>%
+  filter(!is.na(crime_data$Location) & crime_data$Location != "No Location") %>%
+  sample_n(5000)
+head(random_crime_sample, n = 10)
+```
+The `find_a_town` function assigns a town to each of the sample records by checking the crime Location column against the postcode Primary Thorofare. 
+```{r section2-f3}
+random_crime_sample <- find_a_town(random_crime_sample, ni_postcodes)
+```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 g\)
-```{r}
+```{r section2-g}
 
 ```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 h\)
-```{r}
+```{r section2-h}
 
 ```
+```{r section2-h_img, fig.align = 'center', out.width = "80%", fig.cap = "Sample output of random_crime_sample.csv", echo = FALSE}
+knitr::include_graphics(here::here("images", "random_crime_sample.png"))
+```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
 
 i\)
-```{r}
+```{r section2-i}
 
 ```
-
-i\)
-```{r}
-
-```
-
-i\)
-```{r}
-
-```
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
