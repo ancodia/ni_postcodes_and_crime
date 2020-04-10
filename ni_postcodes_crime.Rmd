@@ -1,10 +1,10 @@
 ---
 title: "NI Postcode and Crime Data"
 output:
-  html_document:
-    keep_md: true
   pdf_document: 
     fig_caption: true
+  html_document:
+    keep_md: true
 ---
 ```{r setup, include=FALSE}
 source("ni_postcodes_data.R")
@@ -129,7 +129,9 @@ crime_data <- modify_crime_data_structure(crime_data,
                                                              "Reported.by", 
                                                              "Falls.within", 
                                                              "LSOA.code", 
-                                                             "LSOA.name"),
+                                                             "LSOA.name",
+                                                             "Last.outcome.category", 
+                                                             "Context"),
                                           file_name = "data/AllNICrimeData.csv")
 ```
 
