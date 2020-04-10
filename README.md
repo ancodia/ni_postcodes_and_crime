@@ -2,6 +2,8 @@ This page describes the methods used during and results obtained from the prepar
 
 Data files referenced throughout the document were present in a folder named `data` in the project working directory during the completion of this project.
 
+`ni_postcodes_crime.Rmd` was rmarkdown file used to create the PDF documentation.
+
 Required R packages: `collections`, `dplyr`, `plyr`, `stringr`, `VIM`
 
 # NI Postcode Data
@@ -316,7 +318,9 @@ crime_data <- modify_crime_data_structure(crime_data,
                                                              "Reported.by", 
                                                              "Falls.within", 
                                                              "LSOA.code", 
-                                                             "LSOA.name"),
+                                                             "LSOA.name",
+                                                             "Last.outcome.category", 
+                                                             "Context"),
                                           file_name = "data/AllNICrimeData.csv")
 ```
 
@@ -350,8 +354,6 @@ crime_data <- modify_crime_data_structure(crime_data,
 ##  $ Latitude             : num  54.6 54.6 54.7 54.2 54.9 ...
 ##  $ Location             : chr  "On or near Salisbury Place" "On or near " "On"..
 ##  $ Crime.type           : Factor w/ 14 levels "Anti-social behaviour",..: 1 1 ..
-##  $ Last.outcome.category: logi  NA NA NA NA NA NA ...
-##  $ Context              : logi  NA NA NA NA NA NA ...
 ```
 
 <div class="figure" style="text-align: center">
@@ -414,12 +416,7 @@ head(crime_data, n = 5)
 ## 3 2015-01 -5.815976 54.73161        On or near Milebush Park       ASBO
 ## 4 2015-01 -6.393411 54.19788 On or near College Square North       ASBO
 ## 5 2015-01 -6.251798 54.85970         On or near Staffa Drive       ASBO
-##   Last.outcome.category Context
-## 1                    NA      NA
-## 2                    NA      NA
-## 3                    NA      NA
-## 4                    NA      NA
-## 5                    NA      NA
+
 ```
 
 Using `str_replace` from the `stringr` package to remove unwanted text and replace blank values with NA.  
@@ -442,12 +439,6 @@ head(crime_data, n = 5)
 ## 3 2015-01 -5.815976 54.73161        Milebush Park       ASBO
 ## 4 2015-01 -6.393411 54.19788 College Square North       ASBO
 ## 5 2015-01 -6.251798 54.85970         Staffa Drive       ASBO
-##   Last.outcome.category Context
-## 1                    NA      NA
-## 2                    NA      NA
-## 3                    NA      NA
-## 4                    NA      NA
-## 5                    NA      NA
 ```
 
 \newpage
@@ -474,12 +465,6 @@ head(random_crime_sample, n = 5)
 ## 3 2016-03 -5.925699 54.57408       Annadale Green       ASBO
 ## 4 2015-08 -6.770961 54.50335        Scotch Street       VISO
 ## 5 2016-07 -5.962626 54.60889          Bray Street       ASBO
-##   Last.outcome.category Context
-## 1                    NA      NA
-## 2                    NA      NA
-## 3                    NA      NA
-## 4                    NA      NA
-## 5                    NA      NA
 ```
 
 The `find_a_town` function assigns a town to each of the sample records by checking the crime Location column against the postcode Primary Thorofare. 
@@ -494,18 +479,12 @@ random_crime_sample <- find_a_town(random_crime_sample, ni_postcodes)
 ## ------------------
 ## Town Included:
 ## ------------------
-##     Month Longitude Latitude             Location Crime.type
-## 1 2015-08 -6.677198 55.13192 Captain Street Lower       ASBO
-## 2 2017-06 -5.934686 54.59637        Murray Street       ASBO
-## 3 2016-03 -5.925699 54.57408       Annadale Green       ASBO
-## 4 2015-08 -6.770961 54.50335        Scotch Street       VISO
-## 5 2016-07 -5.962626 54.60889          Bray Street       ASBO
-##   Last.outcome.category Context      Town
-## 1                    NA      NA COLERAINE
-## 2                    NA      NA   BELFAST
-## 3                    NA      NA   BELFAST
-## 4                    NA      NA DUNGANNON
-## 5                    NA      NA   BELFAST
+##     Month Longitude Latitude             Location Crime.type      Town
+## 1 2015-08 -6.677198 55.13192 Captain Street Lower       ASBO COLERAINE
+## 2 2017-06 -5.934686 54.59637        Murray Street       ASBO   BELFAST
+## 3 2016-03 -5.925699 54.57408       Annadale Green       ASBO   BELFAST
+## 4 2015-08 -6.770961 54.50335        Scotch Street       VISO DUNGANNON
+## 5 2016-07 -5.962626 54.60889          Bray Street       ASBO   BELFAST
 ```
 g\) The `add_town_data` function was created to assign population values to each crime record. Population come from the VillageList.csv file:
 
@@ -532,20 +511,20 @@ random_crime_sample <- add_town_data(random_crime_sample, village_data)
 ## ------------------
 ## Population Included:
 ## ------------------
-##     Month Longitude Latitude             Location Crime.type
-## 1 2015-08 -6.677198 55.13192 Captain Street Lower       ASBO
-## 2 2017-06 -5.934686 54.59637        Murray Street       ASBO
-## 3 2016-03 -5.925699 54.57408       Annadale Green       ASBO
-## 4 2015-08 -6.770961 54.50335        Scotch Street       VISO
-## 5 2016-07 -5.962626 54.60889          Bray Street       ASBO
-## 6 2017-08 -7.314481 54.60381        Gortmore Park       ASBO
-##   Last.outcome.category Context      Town Population
-## 1                    NA      NA COLERAINE     24,694
-## 2                    NA      NA   BELFAST    335,665
-## 3                    NA      NA   BELFAST    335,665
-## 4                    NA      NA DUNGANNON     15,987
-## 5                    NA      NA   BELFAST    335,665
-## 6                    NA      NA   LISBURN    121,654
+##     Month Longitude Latitude             Location Crime.type      Town
+## 1 2015-08 -6.677198 55.13192 Captain Street Lower       ASBO COLERAINE
+## 2 2017-06 -5.934686 54.59637        Murray Street       ASBO   BELFAST
+## 3 2016-03 -5.925699 54.57408       Annadale Green       ASBO   BELFAST
+## 4 2015-08 -6.770961 54.50335        Scotch Street       VISO DUNGANNON
+## 5 2016-07 -5.962626 54.60889          Bray Street       ASBO   BELFAST
+## 6 2017-08 -7.314481 54.60381        Gortmore Park       ASBO   LISBURN
+##   Population
+## 1     24,694
+## 2    335,665
+## 3    335,665
+## 4     15,987
+## 5    335,665
+## 6    121,654
 ```
 
 h\) As per the requirements the columns required in the final dataset are Month, Longitude, Latitude, Location, Crime type, City-Town-Village and Population. To achieve this, the Town column must be renamed. The result of this is saved to a csv file, a sample of which is displayed below the code output.
@@ -577,20 +556,20 @@ head(derry_data)
 ```
 
 ```
-##      Month Longitude Latitude         Location Crime.type Last.outcome.category
-## 20 2017-07 -7.305278 55.03020     Earhart Park       ASBO                    NA
-## 26 2017-07 -7.219467 55.02969     Clooney Road       VISO                    NA
-## 46 2015-11 -7.318992 54.99525 Newmarket Street       ASBO                    NA
-## 52 2017-11 -7.314768 55.02488  Racecourse Road       SHOP                    NA
-## 68 2016-05 -7.327385 54.99504       Lecky Road       CDAR                    NA
-## 81 2015-05 -7.328032 55.00309     Academy Road       VISO                    NA
-##    Context City-Town-Village Population
-## 20      NA             DERRY     87,269
-## 26      NA             DERRY     87,269
-## 46      NA             DERRY     87,269
-## 52      NA             DERRY     87,269
-## 68      NA             DERRY     87,269
-## 81      NA             DERRY     87,269
+##      Month Longitude Latitude         Location Crime.type City-Town-Village
+## 20 2017-07 -7.305278 55.03020     Earhart Park       ASBO             DERRY
+## 26 2017-07 -7.219467 55.02969     Clooney Road       VISO             DERRY
+## 46 2015-11 -7.318992 54.99525 Newmarket Street       ASBO             DERRY
+## 52 2017-11 -7.314768 55.02488  Racecourse Road       SHOP             DERRY
+## 68 2016-05 -7.327385 54.99504       Lecky Road       CDAR             DERRY
+## 81 2015-05 -7.328032 55.00309     Academy Road       VISO             DERRY
+##    Population
+## 20     87,269
+## 26     87,269
+## 46     87,269
+## 52     87,269
+## 68     87,269
+## 81     87,269
 ```
 
 Belfast data:
@@ -600,20 +579,20 @@ head(belfast_data)
 ```
 
 ```
-##      Month Longitude Latitude        Location Crime.type Last.outcome.category
-## 2  2017-06 -5.934686 54.59637   Murray Street       ASBO                    NA
-## 3  2016-03 -5.925699 54.57408  Annadale Green       ASBO                    NA
-## 5  2016-07 -5.962626 54.60889     Bray Street       ASBO                    NA
-## 9  2015-10 -5.928756 54.60191 Donegall Street       VISO                    NA
-## 10 2016-07 -5.927049 54.61298   Glenrosa Link       ASBO                    NA
-## 22 2017-01 -5.954282 54.59934   Clonard Place       ASBO                    NA
-##    Context City-Town-Village Population
-## 2       NA           BELFAST    335,665
-## 3       NA           BELFAST    335,665
-## 5       NA           BELFAST    335,665
-## 9       NA           BELFAST    335,665
-## 10      NA           BELFAST    335,665
-## 22      NA           BELFAST    335,665
+##      Month Longitude Latitude        Location Crime.type 
+## 2  2017-06 -5.934686 54.59637   Murray Street       ASBO                    
+## 3  2016-03 -5.925699 54.57408  Annadale Green       ASBO                    
+## 5  2016-07 -5.962626 54.60889     Bray Street       ASBO                    
+## 9  2015-10 -5.928756 54.60191 Donegall Street       VISO                    
+## 10 2016-07 -5.927049 54.61298   Glenrosa Link       ASBO                    
+## 22 2017-01 -5.954282 54.59934   Clonard Place       ASBO                    
+##     City-Town-Village Population
+## 2             BELFAST    335,665
+## 3             BELFAST    335,665
+## 5             BELFAST    335,665
+## 9             BELFAST    335,665
+## 10            BELFAST    335,665
+## 22            BELFAST    335,665
 ```
 Then the data is plotted using `plot_derry_belfast_crime`, displaying two bar charts side-by-side. The `xlim` parameter was used to scale each of the graphs to give a proper visual comparison of crime figures.
 
