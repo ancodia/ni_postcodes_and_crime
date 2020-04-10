@@ -1,30 +1,8 @@
----
-title: "NI Postcode and Crime Data"
-output:
-  html_document:
-    keep_md: true
-  pdf_document: 
-    fig_caption: true
----
+This page describes the methods used during and results obtained from the preparation and analysis of postcode and crime data for Northern Ireland. The postcode dataset is the focus of the first section, while the following section features the steps taken in analysing the crime dataset. 
 
-\begingroup
-\setlength{\tabcolsep}{15pt} 
-\renewcommand{\arraystretch}{1.5} 
-  \begin{tabular}[]{@{}ll@{}}
-    \bf Author:     & Danny Regan \\
-    \bf Supervisor: & Dr James Connolly \\
-    \bf Degree:     & MSc in Big Data Analytics \\
-    \bf Module:     & Data Science 
-  \end{tabular}
-\endgroup
-
-This document describes the methods used during and results obtained from the preparation and analysis of postcode and crime data for Northern Ireland. The postcode dataset is the focus of the first section, while the following section features the steps taken in analysing the crime dataset. 
-
-All code referenced in this document can be found on Github[^1]. Data files referenced throughout the document were present in a folder named `data` in the project working directory during the completion of this project.
+Data files referenced throughout the document were present in a folder named `data` in the project working directory during the completion of this project.
 
 Required R packages: `collections`, `dplyr`, `plyr`, `stringr`, `VIM`
-
-[^1]: https://github.com/ancodia/ni_postcodes_and_crime
 
 # NI Postcode Data
 This section features a walkthrough of the steps taken during processing of the address data found in NIPostcodes.csv. The result of which will be used in the next section dealing with crime data. The associated code can is found in `ni_postcodes_data.R`.
@@ -96,7 +74,6 @@ describe_data(ni_postcodes)
 ## 10 PORTSTEWART LONDONDERRY BT557HF  282220  438467 11
 ```
 
-\newpage
 b\) The correct titles are then assigned to each column in the postcodes dataframe.
 
 ```r
@@ -259,11 +236,10 @@ limavady_data <- extract_limavady_data(ni_postcodes)
 ```
 
 <div class="figure" style="text-align: center">
-<img src="/home/danny/MEGA/College/msc_data_analytics/data_science/ca2/code/ni_postcodes_and_crime/images/limavady.png" alt="limavady.csv" width="90%" />
-<p class="caption">limavady.csv</p>
+<img src="images/limavady.png" alt="limavady.csv" width="90%" />
+<p class="caption">Figure 1: limavady.csv</p>
 </div>
 
-\newpage
 g\) Finally, the cleaned NI postcode dataframe is written to a csv file, ready for analysis.
 
 ```r
@@ -271,11 +247,10 @@ write.csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
 ```
 
 <div class="figure" style="text-align: center">
-<img src="/home/danny/MEGA/College/msc_data_analytics/data_science/ca2/code/ni_postcodes_and_crime/images/cleaned_postcodes.png" alt="CleanNIPostcodeData.csv" width="90%" />
-<p class="caption">CleanNIPostcodeData.csv</p>
+<img src="images/cleaned_postcodes.png" alt="CleanNIPostcodeData.csv" width="90%" />
+<p class="caption">Figure 2: CleanNIPostcodeData.csv</p>
 </div>
 
-\newpage
 # NI Crime Data
 The crime data contained in each of the monthly NI crime data csv files is the focus of this section. The code used here can be found in the `ni_crime_data.R` file on Github. The data from the individual csv files is combined into one dataset, cleaned and population and town values are looked up from the VillageList.csv dataset and the previously cleaned postcode dataset respectively. Visualisations of crime rates are also generated for this portion of the project.
 
@@ -329,8 +304,8 @@ crime_data <- combine_crime_data("data/NI Crime Data/")
 ```
 
 <div class="figure" style="text-align: center">
-<img src="/home/danny/MEGA/College/msc_data_analytics/data_science/ca2/code/ni_postcodes_and_crime/images/all_crime.png" alt="Initial AllNICrimeData.csv" width="90%" />
-<p class="caption">Initial AllNICrimeData.csv</p>
+<img src="images/all_crime.png" alt="Initial AllNICrimeData.csv" width="90%" />
+<p class="caption">Figure 3: Initial AllNICrimeData.csv</p>
 </div>
 
 b\) Modifying the crime dataframe so that CrimeID, Reported by, Falls within, LSOA code, LSOA name, last outcome and context are excluded. New structure is saved to a csv file, displayed in Figure 4.
@@ -380,11 +355,10 @@ crime_data <- modify_crime_data_structure(crime_data,
 ```
 
 <div class="figure" style="text-align: center">
-<img src="/home/danny/MEGA/College/msc_data_analytics/data_science/ca2/code/ni_postcodes_and_crime/images/all_crime2.png" alt="Modified AllNICrimeData.csv" width="90%" />
-<p class="caption">Modified AllNICrimeData.csv</p>
+<img src="images/all_crime2.png" alt="Modified AllNICrimeData.csv" width="90%" />
+<p class="caption">Figure 4: Modified AllNICrimeData.csv</p>
 </div>
 
-\newpage
 c\) Abbreviate text for each crime type:
 
 ```r
@@ -422,12 +396,11 @@ plot_crime_frequency(crime_data)
 
 <div class="figure" style="text-align: center">
 <img src="ni_postcodes_crime_files/figure-html/section2-d-1.png" alt="Northern Ireland Crime Rates" width="75%" />
-<p class="caption">Northern Ireland Crime Rates</p>
+<p class="caption">Figure 5: Northern Ireland Crime Rates</p>
 </div>
 
 It is evident from the chart that anti-social behaviour (ASBO) is the most prevalent crime category throughout the country by  quite a margin. Recorded instances total close to 180,000 whereas the next highest crime type is Violence and sexual offences (VISO) with around 110,000 occurrences
 
-\newpage
 e\) Cleaning up the location column by removing "On or near ", leaving only the street name. A sample of the data before updating:
 
 ```r
@@ -534,8 +507,6 @@ random_crime_sample <- find_a_town(random_crime_sample, ni_postcodes)
 ## 4                    NA      NA DUNGANNON
 ## 5                    NA      NA   BELFAST
 ```
-
-\newpage
 g\) The `add_town_data` function was created to assign population values to each crime record. Population come from the VillageList.csv file:
 
 ```r
@@ -586,11 +557,10 @@ write.csv(random_crime_sample, "data/random_crime_sample.csv")
 ```
 
 <div class="figure" style="text-align: center">
-<img src="/home/danny/MEGA/College/msc_data_analytics/data_science/ca2/code/ni_postcodes_and_crime/images/random_crime_sample.png" alt="CSV file containing random sample of crime data." width="90%" />
-<p class="caption">CSV file containing random sample of crime data.</p>
+<img src="images/random_crime_sample.png" alt="CSV file containing random sample of crime data." width="90%" />
+<p class="caption">Figure 6: CSV file containing random sample of crime data.</p>
 </div>
 
-\newpage
 i\) Finally, crime rates in Derry compared to Belfast are plotted. New dataframes containing only from crimes each of the cities are created:
 
 ```r
@@ -645,8 +615,6 @@ head(belfast_data)
 ## 10      NA           BELFAST    335,665
 ## 22      NA           BELFAST    335,665
 ```
-
-\newpage
 Then the data is plotted using `plot_derry_belfast_crime`, displaying two bar charts side-by-side. The `xlim` parameter was used to scale each of the graphs to give a proper visual comparison of crime figures.
 
 
@@ -656,7 +624,7 @@ plot_derry_belfast_crime(derry_data, belfast_data)
 
 <div class="figure" style="text-align: center">
 <img src="ni_postcodes_crime_files/figure-html/section2-i4-1.png" alt="Derry vs Belfast Crime Rates"  />
-<p class="caption">Derry vs Belfast Crime Rates</p>
+<p class="caption">Figure 7: Derry vs Belfast Crime Rates</p>
 </div>
 
 Occurrences of all crime types have are higher in Belfast which is expected given the difference in population of the two cities. According to the data in VillageList.csv, Belfast has 	335,665 residents while Derry has a population of 87,269.
