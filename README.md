@@ -1,12 +1,13 @@
+# NI Postcode and Crime Data
 This page describes the methods used during and results obtained from the preparation and analysis of postcode and crime data for Northern Ireland. The postcode dataset is the focus of the first section, while the following section features the steps taken in analysing the crime dataset. 
 
 Data files referenced throughout the document were present in a folder named `data` in the project working directory during the completion of this project.
 
-`ni_postcodes_crime.Rmd` was rmarkdown file used to create the PDF documentation.
+`ni_postcodes_crime.Rmd` rmarkdown file was used to create the PDF documentation.
 
 Required R packages: `collections`, `dplyr`, `plyr`, `stringr`, `VIM`
 
-# NI Postcode Data
+## NI Postcode Data
 This section features a walkthrough of the steps taken during processing of the address data found in NIPostcodes.csv. The result of which will be used in the next section dealing with crime data. The associated code can is found in `ni_postcodes_data.R`.
 
 a\) The first step is to load the NI postcodes dataset as a dataframe. The `describe_data()` function is then used to display the total number of records in the newly created dataframe, then shows the structure of the data and prints the first 10 rows.
@@ -253,8 +254,8 @@ write.csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
 <p class="caption">Figure 2: CleanNIPostcodeData.csv</p>
 </div>
 
-# NI Crime Data
-The crime data contained in each of the monthly NI crime data csv files is the focus of this section. The code used here can be found in the `ni_crime_data.R` file on Github. The data from the individual csv files is combined into one dataset, cleaned and population and town values are looked up from the VillageList.csv dataset and the previously cleaned postcode dataset respectively. Visualisations of crime rates are also generated for this portion of the project.
+## NI Crime Data
+The crime data contained in each of the monthly NI crime data csv files is the focus of this section. The code used here can be found in the `ni_crime_data.R` file. The data from the individual csv files is combined into one dataset, cleaned and population and town values are looked up from the VillageList.csv dataset and the previously cleaned postcode dataset respectively. Visualisations of crime rates are also generated for this portion of the project.
 
 a\) In the `combine_crime_data` function all data from the monthly crime report files are combined into a single dataframe, this dataframe is written to the AllNICrimeData.csv file (see Figure 3) and the total number of records is printed.
 
@@ -492,7 +493,7 @@ g\) The `add_town_data` function was created to assign population values to each
 village_data <- read.csv("data/VillageList.csv")
 ```
 
-In the `village_data` dataframe Derry is listed as Derry rather than Londonderry so that is updated in the sample dataset.
+To handle a mismatch between the naming convention for Derry between the postcodes dataset and village dataset, "Londonderry" will be renamed as "Derry" so that the correct population value can be found in the next step.
 
 ```r
 random_crime_sample$Town <- as.character(random_crime_sample$Town)
@@ -606,4 +607,4 @@ plot_derry_belfast_crime(derry_data, belfast_data)
 <p class="caption">Figure 7: Derry vs Belfast Crime Rates</p>
 </div>
 
-Occurrences of all crime types have are higher in Belfast which is expected given the difference in population of the two cities. According to the data in VillageList.csv, Belfast has 	335,665 residents while Derry has a population of 87,269.
+Occurrences of all crime types are higher in Belfast which is expected given the difference in population of the two cities. According to the data taken from VillageList.csv, Belfast has 	335,665 residents while Derry has a population of 87,269.
