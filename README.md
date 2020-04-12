@@ -255,7 +255,7 @@ write.csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
 </div>
 
 ## NI Crime Data
-The crime data contained in each of the monthly NI crime data csv files is the focus of this section. The code used here can be found in the `ni_crime_data.R` file on Github. The data from the individual csv files is combined into one dataset, cleaned and population and town values are looked up from the VillageList.csv dataset and the previously cleaned postcode dataset respectively. Visualisations of crime rates are also generated for this portion of the project.
+The crime data contained in each of the monthly NI crime data csv files is the focus of this section. The code used here can be found in the `ni_crime_data.R` file. The data from the individual csv files is combined into one dataset, cleaned and population and town values are looked up from the VillageList.csv dataset and the previously cleaned postcode dataset respectively. Visualisations of crime rates are also generated for this portion of the project.
 
 a\) In the `combine_crime_data` function all data from the monthly crime report files are combined into a single dataframe, this dataframe is written to the AllNICrimeData.csv file (see Figure 3) and the total number of records is printed.
 
