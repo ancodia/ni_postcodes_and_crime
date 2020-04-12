@@ -30,9 +30,9 @@ Required R packages: `collections`, `dplyr`, `plyr`, `stringr`, `VIM`
 [^1]: https://github.com/ancodia/ni_postcodes_and_crime
 
 # NI Postcode Data
-This section features a walkthrough of the steps taken during processing of the address data found in NIPostcodes.csv. The result of which will be used in the next section dealing with crime data. The associated code can is found in `ni_postcodes_data.R`.
+This section features a walkthrough of the steps taken during processing of the address data found in NIPostcodes.csv. The result of which will be used in the next section dealing with crime data. The associated code can be found in `ni_postcodes_data.R`.
 
-a\) The first step is to load the NI postcodes dataset as a dataframe. The `describe_data()` function is then used to display the total number of records in the newly created dataframe, then shows the structure of the data and prints the first 10 rows.
+a\) The first step is to load the NI postcodes dataset as a dataframe. The `describe_data` function is then used to display the total number of records in the newly created dataframe, then shows the structure of the data and prints the first 10 rows.
 ```{r section1-a}
 ni_postcodes <- read.csv("data/NIPostcodes.csv")
 describe_data(ni_postcodes)
@@ -90,7 +90,7 @@ e\) The primary key column is to be moved from the last position in the datafram
 ni_postcodes <- move_primary_key(ni_postcodes)
 ```
 
-f\) A dataframe is then created containing only postcode records where the locality, townland or town contains Limavady. In the `extract_limavady_data()` function used to achieve this, the number of rows in the new dataframe is displayed and then the data is written to a csv file.
+f\) A dataframe is then created containing only postcode records where the locality, townland or town contains Limavady. In the `extract_limavady_data` function used to achieve this, the number of rows in the new dataframe is displayed and then the data is written to a csv file (see Figure 1).
 ```{r section1-f}
 limavady_data <- extract_limavady_data(ni_postcodes)
 ```
@@ -100,7 +100,7 @@ knitr::include_graphics(here::here("images", "limavady.png"))
 ```
 
 \newpage
-g\) Finally, the cleaned NI postcode dataframe is written to a csv file, ready for analysis.
+g\) Finally, the cleaned NI postcode dataframe is written to a csv file, ready for analysis. A screenshot of the resulting csv file is seen below in Figure 2.
 ```{r section1-g}
 write.csv(ni_postcodes, "data/CleanNIPostcodeData.csv")
 ```
@@ -122,7 +122,8 @@ crime_data <- combine_crime_data("data/NI Crime Data/")
 knitr::include_graphics(here::here("images", "all_crime.png"))
 ```
 
-b\) Modifying the crime dataframe so that CrimeID, Reported by, Falls within, LSOA code, LSOA name, last outcome and context are excluded. New structure is saved to a csv file, displayed in Figure 4.
+\newpage
+b\) Modifying the crime dataframe so that CrimeID, Reported by, Falls within, LSOA code, LSOA name, last outcome category and context are excluded. New structure is saved to a csv file, displayed in Figure 4.
 ```{r section2-b}
 crime_data <- modify_crime_data_structure(crime_data, 
                                           remove_columns = c("Crime.ID", 
@@ -150,7 +151,7 @@ d\) Plot the frequency of each crime type across all of Northern Ireland.
 plot_crime_frequency(crime_data)
 ```
 
-It is evident from the chart that anti-social behaviour (ASBO) is the most prevalent crime category throughout the country by  quite a margin. Recorded instances total close to 180,000 whereas the next highest crime type is Violence and sexual offences (VISO) with around 110,000 occurrences
+It is evident from the chart that anti-social behaviour (ASBO) is the most prevalent crime category throughout the country by  quite a margin. Recorded instances total close to 180,000 whereas the next highest crime type is Violence and sexual offences (VISO) with around 110,000 occurrences.
 
 \newpage
 e\) Cleaning up the location column by removing "On or near ", leaving only the street name. A sample of the data before updating:
@@ -190,12 +191,12 @@ random_crime_sample <- find_a_town(random_crime_sample, ni_postcodes)
 ```
 
 \newpage
-g\) The `add_town_data` function was created to assign population values to each crime record. Population come from the VillageList.csv file:
+g\) The `add_town_data` function was created to assign population values to each crime record. Population values come from the VillageList.csv file:
 ```{r section2-g1}
 village_data <- read.csv("data/VillageList.csv")
 ```
 
-In the `village_data` dataframe Derry is listed as Derry rather than Londonderry so that is updated in the sample dataset.
+To handle a mismatch between the naming convention for Derry between the postcodes dataset and village dataset, "Londonderry" will be renamed as "Derry" so that the correct population value can be found in the next step.
 ```{r section2-g2}
 random_crime_sample$Town <- as.character(random_crime_sample$Town)
 random_crime_sample$Town[random_crime_sample$Town == "LONDONDERRY"] <- "DERRY"
@@ -206,7 +207,7 @@ Matching population figures are assigned to crime records based on the town they
 random_crime_sample <- add_town_data(random_crime_sample, village_data)
 ```
 
-h\) As per the requirements the columns required in the final dataset are Month, Longitude, Latitude, Location, Crime type, City-Town-Village and Population. To achieve this, the Town column must be renamed. The result of this is saved to a csv file, a sample of which is displayed below the code output.
+h\) As per the requirements the columns required in the final dataset are Month, Longitude, Latitude, Location, Crime type, City-Town-Village and Population. To achieve this, the Town column must be renamed. The result of this is saved to a csv file, a sample of which is displayed below the code output (Figure 6).
 ```{r section2-h}
 colnames(random_crime_sample)[
   colnames(random_crime_sample) == "Town"] <- "City-Town-Village"
@@ -218,7 +219,7 @@ knitr::include_graphics(here::here("images", "random_crime_sample.png"))
 ```
 
 \newpage
-i\) Finally, crime rates in Derry compared to Belfast are plotted. New dataframes containing only from crimes each of the cities are created:
+i\) Finally, crime rates in Derry compared to Belfast are plotted. New dataframes containing only data for crimes in each of the cities are created:
 ```{r section2-i1}
 derry_data <- random_crime_sample[
   which(random_crime_sample$"City-Town-Village" == "DERRY"), ]
@@ -231,16 +232,16 @@ Derry data:
 head(derry_data)
 ```
 
+\newpage
 Belfast data:
 ```{r section2-i3}
-head(belfast_data)
+head(belfast_data, n = 5)
 ```
 
-\newpage
 Then the data is plotted using `plot_derry_belfast_crime`, displaying two bar charts side-by-side. The `xlim` parameter was used to scale each of the graphs to give a proper visual comparison of crime figures.
 
-```{r section2-i4, fig.align = "center", fig.cap = "Derry vs Belfast Crime Rates"}
+```{r section2-i4, fig.align = "center", out.width="90%", fig.cap = "Derry vs Belfast Crime Rates"}
 plot_derry_belfast_crime(derry_data, belfast_data)
 ```
 
-Occurrences of all crime types have are higher in Belfast which is expected given the difference in population of the two cities. According to the data in VillageList.csv, Belfast has 	335,665 residents while Derry has a population of 87,269.
+Occurrences of all crime types are higher in Belfast which is expected given the difference in population of the two cities. According to the data taken from VillageList.csv, Belfast has 	335,665 residents while Derry has a population of 87,269.
